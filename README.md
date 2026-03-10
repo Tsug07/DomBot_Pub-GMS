@@ -76,9 +76,11 @@ DomBot_Pub-GMS/
 ├── assets/
 │   ├── DomBot_Pub.ico        # Ícone da aplicação
 │   └── DomBot_Pub.png        # Logo exibida na interface
+├── logs/                     # Logs de execução (ignorado pelo git)
+│   └── publicacao_YYYYMMDD_HHMMSS.log
 ├── DomBot_Pub_GMS.py         # Código principal
 ├── iniciar_DomBot_Pub.bat    # Script de inicialização rápida
-├── publicacao_log.txt        # Log de execução gerado automaticamente
+├── .gitignore
 └── README.md
 ```
 

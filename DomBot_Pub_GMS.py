@@ -18,6 +18,14 @@ class DomBot:
         self.app = None
         self.main_window = None
 
+        # Criar pasta de logs e arquivo de log com timestamp
+        self.log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+        os.makedirs(self.log_dir, exist_ok=True)
+        self.log_file = os.path.join(
+            self.log_dir,
+            f"publicacao_{time.strftime('%Y%m%d_%H%M%S')}.log"
+        )
+
         # Conectar usando método robusto
         if not self.connect_to_dominio():
             raise Exception("Não foi possível conectar ao Domínio Folha")
@@ -25,8 +33,7 @@ class DomBot:
     def log(self, mensagem):
         if callable(self.log_callback):
             self.log_callback(mensagem)
-        # Opcional: salvar logs em arquivo para depuração
-        with open("publicacao_log.txt", "a", encoding="utf-8") as f:
+        with open(self.log_file, "a", encoding="utf-8") as f:
             f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {mensagem}\n")
 
     def find_dominio_window(self):

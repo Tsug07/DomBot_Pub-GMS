@@ -1,0 +1,19 @@
+# Logs
+logs/
+publicacao_log.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+venv/
+.env/
+
+# IDE
+.vscode/
+.idea/
