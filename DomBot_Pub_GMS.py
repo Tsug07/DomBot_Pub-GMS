@@ -9,6 +9,10 @@ from pywinauto import Application, findwindows
 from pywinauto.findwindows import ElementNotFoundError
 import win32gui
 import win32con
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class DomBot:
     def __init__(self, log_callback=None, progress_callback=None, ui_reference=None):
@@ -26,9 +30,53 @@ class DomBot:
             f"publicacao_{time.strftime('%Y%m%d_%H%M%S')}.log"
         )
 
+        # Webhook do Discord
+        self.discord_webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
+
         # Conectar usando método robusto
         if not self.connect_to_dominio():
             raise Exception("Não foi possível conectar ao Domínio Folha")
+
+    def notificar_discord(self, sucesso, total, processados):
+        """Envia notificação ao Discord via webhook ao finalizar o processo"""
+        if not self.discord_webhook_url:
+            self.log("⚠️ Webhook do Discord não configurado no .env")
+            return
+
+        if sucesso == total:
+            cor = 0x00FF00  # Verde
+            status = "Concluído com Sucesso"
+        elif sucesso > 0:
+            cor = 0xFFA500  # Laranja
+            status = "Concluído com Avisos"
+        else:
+            cor = 0xFF0000  # Vermelho
+            status = "Falha na Publicação"
+
+        payload = {
+            "content": "<@&1299044385899548752>",
+            "embeds": [
+                {
+                    "title": f"DomBot_Pub_GMS - {status}",
+                    "color": cor,
+                    "fields": [
+                        {"name": "Total de Documentos", "value": str(total), "inline": True},
+                        {"name": "Processados", "value": str(processados), "inline": True},
+                        {"name": "Publicados com Sucesso", "value": str(sucesso), "inline": True},
+                    ],
+                    "footer": {"text": f"DomBot_Pub_GMS • {time.strftime('%d/%m/%Y %H:%M:%S')}"},
+                }
+            ],
+        }
+
+        try:
+            response = requests.post(self.discord_webhook_url, json=payload)
+            if response.status_code == 204:
+                self.log("✅ Notificação enviada ao Discord")
+            else:
+                self.log(f"⚠️ Discord retornou status {response.status_code}")
+        except Exception as e:
+            self.log(f"⚠️ Erro ao notificar Discord: {str(e)}")
 
     def log(self, mensagem):
         if callable(self.log_callback):
@@ -344,6 +392,9 @@ class DomBot:
             else:
                 self.update_progress(total_documentos, total_documentos, "Concluído!")
                 self.log(f"🎉 Processamento concluído! {documentos_sucesso}/{total_documentos} documentos publicados com sucesso.")
+
+            # Notificar Discord ao finalizar
+            self.notificar_discord(documentos_sucesso, total_documentos, documentos_processados)
             return True
 
         except Exception as e:

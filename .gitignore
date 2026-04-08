@@ -10,9 +10,12 @@ __pycache__/
 dist/
 build/
 
+# Environment variables
+.env
+
 # Virtual environment
 venv/
-.env/
+.venv/
 
 # IDE
 .vscode/
